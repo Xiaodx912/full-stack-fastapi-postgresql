@@ -12,7 +12,7 @@ RUN pip config set global.index-url http://mirrors.aliyun.com/pypi/simple && \
     pip install -U pip
 
 # Install Poetry
-RUN cat /install_poetry.py:q | POETRY_HOME=/opt/poetry python && \
+RUN cat /install_poetry.py | POETRY_HOME=/opt/poetry python && \
     cd /usr/local/bin && \
     ln -s /opt/poetry/bin/poetry && \
     cd /app/ && \

@@ -2,17 +2,25 @@ FROM python:3.9
 
 WORKDIR /app/
 
-# Install Poetry
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python && \
-    cd /usr/local/bin && \
-    ln -s /opt/poetry/bin/poetry && \
-    poetry config virtualenvs.create false
+COPY ./install_poetry.py /
 
 # Copy poetry.lock* in case it doesn't exist in the repo
 COPY ./app/pyproject.toml ./app/poetry.lock* /app/
 
+RUN pip config set global.index-url http://mirrors.aliyun.com/pypi/simple && \
+    pip config set install.trusted-host mirrors.aliyun.com && \
+    pip install -U pip
+
+# Install Poetry
+RUN cat /install_poetry.py:q | POETRY_HOME=/opt/poetry python && \
+    cd /usr/local/bin && \
+    ln -s /opt/poetry/bin/poetry && \
+    cd /app/ && \
+    poetry source add --default mirrors https://pypi.tuna.tsinghua.edu.cn/simple/ && \
+    poetry config virtualenvs.create false
+
 # Neomodel has shapely and libgeos as dependencies
-RUN apt-get update && apt-get install -y libgeos-dev
+RUN sed -i 's/http:\/\/deb.debian.org\/debian/https:\/\/mirrors.tuna.tsinghua.edu.cn\/debian/g' /etc/apt/sources.list && apt-get update && apt-get install -y libgeos-dev
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false

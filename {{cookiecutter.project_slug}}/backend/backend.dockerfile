@@ -5,8 +5,11 @@ COPY ./app/pyproject.toml ./app/poetry.lock* /app/
 
 WORKDIR /app/
 
+RUN pip config set global.index-url http://mirrors.aliyun.com/pypi/simple && \
+    pip config set install.trusted-host mirrors.aliyun.com
+
 # Neomodel has shapely and libgeos as dependencies
-RUN apt-get update && apt-get install -y libgeos-dev
+RUN sed -i 's/http:\/\/deb.debian.org\/debian/https:\/\/mirrors.tuna.tsinghua.edu.cn\/debian/g' /etc/apt/sources.list && apt-get update && apt-get install -y libgeos-dev
 
 # Allow installing dev dependencies to run tests
 ARG INSTALL_DEV=false
